@@ -1,12 +1,12 @@
 package com.c209.ticket.domain.ticket.service.impl;
 
 import com.c209.ticket.domain.ticket.dto.TicketDto;
+import com.c209.ticket.domain.ticket.dto.request.PayReissueTicketRequest;
 import com.c209.ticket.domain.ticket.dto.response.TicketListResponse;
 import com.c209.ticket.domain.ticket.dto.response.TicketPaymentsListResponse;
 import com.c209.ticket.domain.ticket.entity.Status;
 import com.c209.ticket.domain.ticket.entity.Ticket;
 import com.c209.ticket.domain.ticket.entity.TicketSync;
-import com.c209.ticket.domain.ticket.exception.TicketErrorCode;
 import com.c209.ticket.domain.ticket.repository.async.TicketAsyncRepository;
 import com.c209.ticket.domain.ticket.repository.sync.TicketSyncRepository;
 import com.c209.ticket.domain.ticket.service.TicketService;
@@ -266,6 +266,39 @@ public class TicketServiceImpl implements TicketService {
 
         log.info("재발급된 티켓 {}", reIssueTickets);
         ticketSyncRepository.saveAll(reIssueTickets);
+        return true;
+    }
+
+    //환불 결제
+    //해당 티켓을 조회합니다.
+    //owner id 가 맞는지 확인합니다.
+    //
+    //예매완료처리합니다.
+    //해당 티켓의 is_used를 0으로 만듭니다.
+    //해당 티켓의 imp uid를 업데이트 합니다.
+    //status를 예매완료로 바꿉니다.
+
+
+    @Override
+    public Boolean payReissueTicket(Long userId, Long ticketId, PayReissueTicketRequest request) {
+        TicketSync ticket = ticketSyncRepository.findByTicketId(ticketId)
+                .orElseThrow(()-> new CommonException(TICKET_NOT_FOUND));
+
+        if(!ticket.getOwnerId().equals(userId)){
+            throw new CommonException(TICKET_UNOWNED);
+        }
+
+        if(!ticket.getPrice().equals(request.price())){
+            throw new CommonException("실제 결제 금액이 다릅니다.", HttpStatus.CONFLICT);
+        }
+
+        ticket.setIsUsed(false);
+        ticket.setBuyerId(userId);
+        ticket.setImpUid(request.impUid());
+        ticket.setPayDueDate(null);
+        ticket.setStatus(Status.예매완료);
+        ticketSyncRepository.save(ticket);
+
         return true;
     }
 }

@@ -48,14 +48,19 @@ public class TicketConsumerService {
                     save.setStatus(Status.예매완료);
 
 
-                    notificationRestClient.sendFcm(
-                            FcmRequest
-                                    .builder()
-                                    .body("티켓 예매가 완료되었습니다.")
-                                    .receiver_id(issue.ownerId())
-                                    .title("[콘팅] : 티켓 예매 완료")
-                                    .build()
-                    );
+                    try{
+                        notificationRestClient.sendFcm(
+                                FcmRequest
+                                        .builder()
+                                        .body("티켓 예매가 완료되었습니다.")
+                                        .receiver_id(issue.ownerId())
+                                        .title("[콘팅] : 티켓 예매 완료")
+                                        .build()
+                        );
+                    }catch(Exception e){
+                        log.error("fcm 발송 도중 에러 발생 {}" , e);
+                    }
+
                     ticketAsyncRepository.save(save).block();
                     log.info("저장된 값 : {}", save);
             }

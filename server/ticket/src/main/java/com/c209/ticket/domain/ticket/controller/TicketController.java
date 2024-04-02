@@ -2,6 +2,7 @@ package com.c209.ticket.domain.ticket.controller;
 
 
 import com.c209.ticket.domain.ticket.dto.TicketDto;
+import com.c209.ticket.domain.ticket.dto.request.PayReissueTicketRequest;
 import com.c209.ticket.domain.ticket.dto.response.ResultResponse;
 import com.c209.ticket.domain.ticket.dto.response.TicketListResponse;
 import com.c209.ticket.domain.ticket.dto.response.TicketPaymentsListResponse;
@@ -33,6 +34,20 @@ public class TicketController {
                 .build());
     }
 
+
+    @PutMapping("{ticket_id}/pay")
+    public ResponseEntity<ResultResponse> payReissueTicket(
+            @RequestHeader("X-Authorization-Id")Long userId,
+            @PathVariable("ticket_id") Long ticketId,
+            @RequestBody PayReissueTicketRequest request
+            ){
+        return ResponseEntity.ok(
+                ResultResponse
+                        .builder()
+                        .result(ticketService.payReissueTicket(userId, ticketId, request))
+                        .build()
+        );
+    }
     //환불 결제
         //해당 티켓을 조회합니다.
         //owner id 가 맞는지 확인합니다.
