@@ -1,4 +1,4 @@
-import {Animated, ImageBackground, StyleSheet, Text, View} from 'react-native';
+import {Animated, ImageBackground, StyleSheet, Text, TouchableWithoutFeedback, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {useRecoilValue} from 'recoil';
 import {currentColor} from '../../utils/recoil/Atoms';
@@ -30,6 +30,7 @@ export default function ConcertDetailScreen({route}) {
   const backgroundColor = useRecoilValue(currentColor);
   const navigation = useNavigation();
   const show_id = route.params.show_id;
+  const [showButtons, setShowButtons] = useState(false);
   // 스크롤 위치 추적을 위한 Animated.Value
   const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -48,6 +49,11 @@ export default function ConcertDetailScreen({route}) {
     fetchData(show_id);
   }, []);
 
+  const handlePress = () => {
+    // 확장된 UI가 표시되고 있을 때 배경을 터치하면, 원래의 버튼을 다시 표시
+    setShowButtons(true);
+  };
+
   if (!concertDetail) {
     // concertDetail 데이터가 아직 로드되지 않았을 때의 대체 컨텐츠 (예: 로딩 스피너)
     return <Loading />;
@@ -58,6 +64,8 @@ export default function ConcertDetailScreen({route}) {
       resizeMode="stretch"
       style={{flex: 1, justifyContent: 'space-between'}}
       source={{uri: concertDetail.show.poster}}>
+      <TouchableWithoutFeedback onPress={handlePress}>
+      <View style={{ flex: 1 }}>
       <View style={styles.topContainer}>
         <ArrowLeft
           onPress={() => navigation.goBack()}
@@ -194,9 +202,13 @@ export default function ConcertDetailScreen({route}) {
           </View>
         </Animated.ScrollView>
       </LinearGradient>
+      </View>
+      </TouchableWithoutFeedback>
       <ConcertBottomButtons
         scrollY={scrollY}
         schedule={[concertDetail.schedule]}
+        showButtons={showButtons}
+        setShowButtons={setShowButtons}
         showID={show_id}
       />
     </ImageBackground>

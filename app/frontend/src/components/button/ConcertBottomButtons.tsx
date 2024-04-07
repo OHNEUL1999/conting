@@ -1,15 +1,27 @@
 import * as React from 'react';
-import {useRef, useState} from 'react';
+import {useRef, useState, useEffect} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, Animated} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {YellowButton} from './Button';
 import {widthPercent} from '../../config/Dimensions';
 import ConcertDateChoiceButton from './ConcertDateChoiceButton';
 import FamilySelectButton from './FamilySelectButton';
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
-export default function ConcertBottomButtons({scrollY, schedule, showID}) {
+export default function ConcertBottomButtons({scrollY, schedule, showID, showButtons,setShowButtons}) {
   const [showDateSelector, setShowDateSelector] = useState(false);
   const [showRequest, setShowRequest] = useState(false);
+
+  useEffect(()=> {
+    if (showDateSelector || showRequest) {
+        if (showButtons === true){
+        console.log('터치함')
+        // 배경 터치한 경우, 함수 호출
+        handleOutsidePress();
+
+      }
+    }
+  })
 
   // 버튼의 불투명도 제어를 위한 Animated.Value
   const buttonOpacity = useRef(new Animated.Value(1)).current;
@@ -26,7 +38,7 @@ export default function ConcertBottomButtons({scrollY, schedule, showID}) {
   // 직접 예매하기 버튼 누른 경우 호출될 함수
   const onDirectTicketingPress = () => {
     // console.log('dd', scrollY);
-    console.log('ㅇ?', schedule);
+    // console.log('ㅇ?', schedule);
     // 기존 버튼을 숨기는 애니메이션
     Animated.timing(buttonOpacity, {
       toValue: 0,
@@ -61,7 +73,25 @@ export default function ConcertBottomButtons({scrollY, schedule, showID}) {
     });
   };
 
+  // 사용자가 확장된 UI 외부를 터치했을 때 호출될 함수
+ const handleOutsidePress = () => {
+  // 만약 가족 선택 또는 날짜 선택 버튼이 렌더링 되있는 경우, 닫기
+  
+    setShowDateSelector(false);
+    setShowRequest(false);
+    // 버튼을 다시 보이게 하는 애니메이션 추가
+    Animated.timing(buttonOpacity, {
+      toValue: 1, // 불투명도를 1로 설정
+      duration: 300, // 애니메이션 지속 시간
+      useNativeDriver: true,
+    }).start();
+    setShowButtons(false);
+  
+};
+
+
   return (
+    
     <View style={styles.container}>
       <Animated.View
         style={[{opacity: buttonOpacity}, {transform: [{translateY}]}]}>
@@ -98,6 +128,7 @@ export default function ConcertBottomButtons({scrollY, schedule, showID}) {
         </Animated.View>
       )}
     </View>
+    
   );
 }
 
